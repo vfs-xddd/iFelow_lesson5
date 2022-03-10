@@ -5,6 +5,7 @@ import io.restassured.specification.ResponseSpecification;
 import org.json.simple.parser.JSONParser;
 import org.json.JSONObject;
 import org.json.simple.parser.ParseException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 
-public class Run {
+public class RunTasks {
     public final String url = "https://rickandmortyapi.com";     //base url for all api
     public final String defaultPath = "./src/test/java/";
 
@@ -59,11 +60,13 @@ public class Run {
 
     }
 
-    public org.json.simple.JSONObject jsonFileReader(){
+    public JSONObject jsonFileReader(){
         String filePath = defaultPath + "requestBody.json";
         try {
             JSONParser jsonParser = new JSONParser();
-            return (org.json.simple.JSONObject) jsonParser.parse(new FileReader(filePath));
+            org.json.simple.JSONObject json = (org.json.simple.JSONObject) jsonParser.parse(new FileReader(filePath));
+            JSONObject jsonConverted = new JSONObject(json.toJSONString());
+            return jsonConverted;
         }
         catch (IOException | ParseException e) {
             System.out.println("some IO Parser errors");
@@ -74,10 +77,10 @@ public class Run {
     }
 
 
-    //@Tag("1api")
-    //@Test
-    @DisplayName("Характер Морти")
-    public void morti() {
+    @Tag("1api")
+    @Test
+    @DisplayName("Погружение в API ")
+    public void task1() {
         JSONObject json = sendGetRequest("/api/character/2");
         int size = json.getJSONArray("episode").length();
         String lastMortyEpisode = json.getJSONArray("episode").getString(size-1);
@@ -98,44 +101,33 @@ public class Run {
 
     @Tag("2api")
     @Test
-    @DisplayName("test")
-    public void test2() {
-        String body = "{\"name\": \"morpheus\",\"job\": \"leader\"}";
+    @DisplayName("Углубление в API")
+    public void task2() {
 
-        JSONObject requestBody = new JSONObject();
-        requestBody.put("name", "Potato");
-        if (!jsonFileWriter(requestBody)) return;
-        org.json.simple.JSONObject json = jsonFileReader();
-        if (json == null) return;
-        System.out.println(json.get("name"));
+        JSONObject json = new JSONObject();
+        json.put("name", "Potato");
+        if (!jsonFileWriter(json)) return;                                              //Создали файл
+        JSONObject requestBody = jsonFileReader(); if (requestBody == null) return;     //Прочитали файл
+        requestBody.put("name", "Tomato");
+        requestBody.put("job", "Eat maket" );
 
-//        JSONObject requestBody = new JSONObject();
-//        requestBody.put("name", "morpheus");
-//        requestBody.put("job", "leader");
-//
-//        Response response3 = given()
-//                .baseUri("https://reqres.in/")
-//                .contentType("application/json;charset=UTF-8")
-//                .log().all()
-//                .when()
-//                .body(requestBody.toString())
-//                .post("/api/users")
-//                .then()
-//                .statusCode(201)
-//                .log().all()
-//                .extract().response();
-//
-//        JSONObject json = new JSONObject(response3);
-//        Assertions.assertEquals(json.getString("name"), "morpheus");
-//        Assertions.assertEquals(json.getString("job"), "leader");
+        Response response2 = given()
+                .baseUri("https://reqres.in")
+                .contentType("application/json;charset=UTF-8")
+                //.log().all()
+                .when()
+                .body(requestBody.toString())
+                .post("/api/users")
+                .then()
+                .statusCode(201)
+                //.log().all()
+                .extract().response();
 
-
-
-//    String resp2 = response1.getBody().asString();
-//    JSONObject json = new JSONObject(resp2);
-//    int count = json.getJSONObject("info").getInt("count");
-//    int jsonsize = json.getJSONArray("results").length();
-//    String name = json.getJSONArray("results").getJSONObject(jsonsize-1).getJSONObject("origin").getString("name");
+        JSONObject jsonResult = new JSONObject(response2.getBody().asString());
+        Assertions.assertEquals("Tomato", jsonResult.getString("name"));
+        Assertions.assertEquals("Eat maket", jsonResult.getString("job"));
+        Assertions.assertEquals("325", jsonResult.getString("id"));
+        Assertions.assertEquals("2021-08-03T10:22:44.071Z", jsonResult.getString("createdAt"));
     }
 }
 
