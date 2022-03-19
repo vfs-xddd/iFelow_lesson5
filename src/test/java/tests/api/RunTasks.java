@@ -1,3 +1,6 @@
+package tests.api;
+
+import hooks.testConfig;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -16,8 +19,9 @@ import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 
-public class RunTasks {
-    public final String url = "https://rickandmortyapi.com";     //base url for all api
+public class RunTasks extends testConfig {
+
+    public final String url = System.getProperty("url");     //base url for all api
     public final String defaultPath = "./src/test/java/";
 
     public JSONObject sendGetRequest(String api) {
@@ -45,7 +49,7 @@ public class RunTasks {
     }
 
     public Boolean jsonFileWriter(JSONObject json) {
-        String path = defaultPath + "requestBody.json";
+        String path = defaultPath + "tests/api/requestBody.json";
         try {
             FileWriter file = new FileWriter(path);
             file.write(json.toString());
@@ -61,7 +65,7 @@ public class RunTasks {
     }
 
     public JSONObject jsonFileReader(){
-        String filePath = defaultPath + "requestBody.json";
+        String filePath = defaultPath + "tests/api/requestBody.json";
         try {
             JSONParser jsonParser = new JSONParser();
             org.json.simple.JSONObject json = (org.json.simple.JSONObject) jsonParser.parse(new FileReader(filePath));
