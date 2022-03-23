@@ -1,33 +1,28 @@
 package tests.api;
 
-import hooks.testConfig;
+import hooks.TestConfig;
 import io.qameta.allure.Description;
 import io.qameta.allure.Step;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.ResponseSpecification;
-import org.json.simple.parser.JSONParser;
 import org.json.JSONObject;
-import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import utils.JsonTools;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
 
-public class RunTasks extends testConfig {
+
+public class RunTasks extends TestConfig {
 
     public final String url = System.getProperty("url");     //base url for all api
-    public final String defaultPath = "./src/test/java/";
 
     @DisplayName("Отправить аpi запрос")
     @Description( "api запрос: {api}")
@@ -55,40 +50,6 @@ public class RunTasks extends testConfig {
         return new JSONObject(resp1);
     }
 
-    @DisplayName("Создать Json файл")
-    public Boolean jsonFileWriter(JSONObject json) {
-        String path = defaultPath + "tests/api/requestBody.json";
-        try {
-            FileWriter file = new FileWriter(path);
-            file.write(json.toString());
-            file.close();
-            return true;
-        }
-        catch (IOException e) {
-            System.out.println("some IO errors");
-            e.printStackTrace();
-            return false;
-        }
-
-    }
-
-    @DisplayName("Прочитать Json файл")
-    public JSONObject jsonFileReader(){
-        String filePath = defaultPath + "tests/api/requestBody.json";
-        try {
-            JSONParser jsonParser = new JSONParser();
-            org.json.simple.JSONObject json = (org.json.simple.JSONObject) jsonParser.parse(new FileReader(filePath));
-            JSONObject jsonConverted = new JSONObject(json.toJSONString());
-            return jsonConverted;
-        }
-        catch (IOException | ParseException e) {
-            System.out.println("some IO Parser errors");
-            e.printStackTrace();
-            return null;
-        }
-
-    }
-
     @Tag("1api")
     @Test
     @DisplayName("Погружение в API")
@@ -105,14 +66,13 @@ public class RunTasks extends testConfig {
         print("same locations? - "+ list.get(0)+ " || same species? - "+ list.get(1));
     }
 
-    @Step
-    @DisplayName("Выбрать из ответа последний эпизод, где появлялся Морти")
+    @Step("Выбрать из ответа последний эпизод, где появлялся Морти")
     public String getLastMortyEpisode(JSONObject json){
         int size = json.getJSONArray("episode").length();
         return json.getJSONArray("episode").getString(size-1);
     }
 
-    @Step
+    @Step("Вывести ответ:")
     @DisplayName("Вывести ответ:")
     @Description("Вывести ответ: {report}")
     public void print(String report){
@@ -151,8 +111,9 @@ public class RunTasks extends testConfig {
     @Test
     @DisplayName("Углубление в API")
     public void task2() {
-        createJson();
-        JSONObject responseBody = getResponseBodyFromFileAndChange();
+        String fileName = "requestBody.json";
+        createJson(fileName);
+        JSONObject responseBody = getResponseBodyFromFileAndChange(fileName);
         JSONObject resJson = createTestResponse(responseBody);
         checkResponse(resJson);
     }
@@ -161,17 +122,17 @@ public class RunTasks extends testConfig {
     @Step
     @DisplayName("Создать в проекте файл с расширением .Json ")
     @Description("передать в файл { \"name\": \"Potato\" } ")
-    public void createJson(){
+    public void createJson(String fileName){
         JSONObject json = new JSONObject();
         json.put("name", "Potato");
-        if (!jsonFileWriter(json)) System.out.println("didnt write a file");                                              //Создали файл
+        if (!JsonTools.jsonFileWriter(json, fileName)) System.out.println("didnt write a file");                                              //Создали файл
     }
 
     @Step
     @DisplayName("Изменить json файл")
     @Description("передать в файл { \"name\": \"Tomato\", \"job\": \"Eat maket\" } ")
-    public JSONObject getResponseBodyFromFileAndChange(){
-        JSONObject requestBody = jsonFileReader(); if (requestBody == null) return null;     //Прочитали файл
+    public JSONObject getResponseBodyFromFileAndChange(String fileName){
+        JSONObject requestBody = JsonTools.jsonFileReader(fileName); if (requestBody == null) return null;     //Прочитали файл
         requestBody.put("name", "Tomato");
         requestBody.put("job", "Eat maket" );                                             //Создали файл
         return requestBody;
@@ -202,8 +163,8 @@ public class RunTasks extends testConfig {
     public void checkResponse(JSONObject jsonResult){
         Assertions.assertEquals("Tomato", jsonResult.getString("name"));
         Assertions.assertEquals("Eat maket", jsonResult.getString("job"));
-        Assertions.assertEquals("325", jsonResult.getString("id"), "Не валидный ID - ");
-        Assertions.assertEquals("2021-08-03T10:22:44.071Z", jsonResult.getString("createdAt"));
+        Assertions.assertNotEquals("325", jsonResult.getString("id"), "Не валидный ID - ");
+        Assertions.assertNotEquals("2021-08-03T10:22:44.071Z", jsonResult.getString("createdAt"));
     }
 }
 

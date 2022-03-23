@@ -1,9 +1,15 @@
-package Utils;
+package utils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/** Класс обработчик входных данных.
+ * <p>Использует System properties.</p>
+ *
+ * @author Maksim_Kachaev
+ * @see System
+ * */
 public class PropertyManager {
 
     private static final String CONFIG_FILE_PATH = "/test.properties";

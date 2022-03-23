@@ -5,7 +5,7 @@ import io.restassured.RestAssured;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-public class apiHooks implements BeforeAllCallback {
+public class ApiHooks implements BeforeAllCallback {
     public static Boolean started = false;
 
     @Override

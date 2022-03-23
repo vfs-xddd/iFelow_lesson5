@@ -5,8 +5,8 @@
                              https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>junitFrame</groupId>
-    <artifactId>iFellow_les_5</artifactId>
+    <groupId>iFellow</groupId>
+    <artifactId>Junit5CucumberAllure</artifactId>
     <version>1.0-SNAPSHOT</version>
 
 
@@ -22,10 +22,11 @@
         <allure.version>2.13.2</allure.version>
         <allure-maven.version>2.10.0</allure-maven.version>
         <selenide.version>5.18.0</selenide.version>
-        <jumit.platform.version>1.7.2</jumit.platform.version>
+        <junit.platform.version>1.7.2</junit.platform.version>
         <junit.jupiter.version>5.7.0</junit.jupiter.version>
         <junit.vintage.version>5.7.0</junit.vintage.version>
         <restAssured.version>4.2.0</restAssured.version>
+        <cucumber.version>6.9.1</cucumber.version>
         <log4j.version>1.2.17</log4j.version>
         <log4jCore.version>2.13.2</log4jCore.version>
         <aspectj.version>1.8.10</aspectj.version>
@@ -33,6 +34,7 @@
         <jsch.version>0.1.55</jsch.version>
         <sshd-core.version>2.7.0</sshd-core.version>
         <allureJunit5.version>2.14.0</allureJunit5.version>
+        <cucumber.6.jvm.version>2.13.6</cucumber.6.jvm.version>
         <json.version>20210307</json.version>
 
         <parallelCount>1</parallelCount>
@@ -44,11 +46,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.7.36</version>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-            <version>1.1.1</version>
         </dependency>
         <dependency>
             <groupId>io.qameta.allure</groupId>
@@ -65,6 +62,16 @@
             <groupId>com.jcraft</groupId>
             <artifactId>jsch</artifactId>
             <version>${jsch.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <version>${cucumber.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit</artifactId>
+            <version>${cucumber.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -86,7 +93,7 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-launcher</artifactId>
-            <version>${jumit.platform.version}</version>
+            <version>${junit.platform.version}</version>
         </dependency>
         <dependency>
             <groupId>io.qameta.allure</groupId>
@@ -97,6 +104,11 @@
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-rest-assured</artifactId>
             <version>${allure.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-cucumber6-jvm</artifactId>
+            <version>${cucumber.6.jvm.version}</version>
         </dependency>
         <dependency>
             <groupId>com.codeborne</groupId>
@@ -118,6 +130,11 @@
             <artifactId>json</artifactId>
             <version>${json.version}</version>
         </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>log4j</groupId>-->
+        <!--            <artifactId>log4j</artifactId>-->
+        <!--            <version>${log4j.version}</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
@@ -140,20 +157,22 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>2.20</version>
                 <configuration>
-                    <parallel>all</parallel>
+                    <parallel>methods</parallel>                            <!-- all -->
                     <threadCount>${parallelCount}</threadCount>
+                    <perCoreThreadCount>true</perCoreThreadCount>
+                    <perCoreThreadCount>${parallelCount}</perCoreThreadCount>
                     <argLine>
-                        <!--                        эти строки указывают сколько памяти надо выделять на сборку, устанавливать больше 1гб опасно для слабых и не настроеных Jenkins агентов-->
+                        <!-- эти строки указывают сколько памяти надо выделять на сборку, устанавливать больше 1гб опасно для слабых и не настроеных Jenkins агентов-->
                         -Xmx1024m
                         -Xms1024m
                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
-
+                        <!--                        нужно указать кодировку иначе в терминале не будет кирилицы у фич кукумбера-->
+                        -Dfile.encoding=UTF-8
                     </argLine>
                     <failIfNoTests>true</failIfNoTests>
                     <testFailureIgnore>true</testFailureIgnore>
-
                     <systemPropertyVariables>
                         <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
                     </systemPropertyVariables>
